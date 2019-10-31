@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/js/bootStrap/css/bootstrap.min.css">
+    <link rel="icon" href="/js/shop/assets/img/favicon.ico">
+    <link rel="stylesheet" type="text/css" href="/js/shop/css/webbase.css" />
+    <link rel="stylesheet" type="text/css" href="/js/shop/css/pages-JD-index.css" />
+    <link rel="stylesheet" type="text/css" href="/js/shop/css/widget-jquery.autocomplete.css" />
+    <link rel="stylesheet" type="text/css" href="/js/shop/css/widget-cartPanelView.css" />
+    <title>商品首页</title>
+</head>
+<body>
+
+<div id="navDiv"></div>
+<div id="nav-bottom">
+    <!--顶部-->
+    <div class="nav-top">
+        <!--头部-->
+        <div class="header">
+            <div class="py-container">
+                <div class="yui3-g NavList">
+                    <div class="yui3-u Left all-sort">
+                        <h4>全部商品分类</h4>
+                    </div>
+                    <div class="yui3-u Center navArea">
+                        <ul class="nav">
+                            <li class="f-item">服装城</li>
+                            <li class="f-item">美妆馆</li>
+                            <li class="f-item">品优超市</li>
+                            <li class="f-item">全球购</li>
+                            <li class="f-item">闪购</li>
+                            <li class="f-item">团购</li>
+                            <li class="f-item">有趣</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--列表-->
+<div class="sort">
+    <div class="py-container">
+        <div class="yui3-g SortList ">
+            <div class="yui3-u Left all-sort-list">
+                <div class="all-sort-list2" id="typeListDiv">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <div class="container" >
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-success">
+                    <div class="panel-heading">商品首页</div>
+                    <div class="panel-body" id="resultDiv">
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">热销商品</div>
+                        <div class="panel-body" id="resultBrandDiv">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="display: none" id="modelDiv">
+        <div class="col-sm-6 col-md-4">
+            <div class="thumbnail">
+                <img src="##proImg##" width="100px" alt="图片加载失败">
+                <div class="caption">
+                    <h3>##proName##</h3>
+                    <p>##price##</p>
+                    <p><a href="#" class="btn btn-primary" role="button" onclick="buyProduct('##productId##')">购买</a> <a href="#" class="btn btn-default" role="button">收藏</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: none" id="modelBrandDiv">
+        <div class="col-sm-6 col-md-4">
+            <div class="thumbnail">
+                <img src="##brandImg##" alt="图片加载失败">
+                <div class="caption">
+                    <h3>##brandName##</h3>
+                    <p><a href="#" class="btn btn-primary" role="button">购买</a> <a href="#" class="btn btn-default" role="button">收藏</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<!--用户未登陆的时候弹出的模态框-->
+<div id="memberLoginDiv" style="display: none">
+    <form class="form-horizontal">
+        <div class="form-group">
+            <label class="col-sm-2 control-label">会员名:</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" placeholder="请输入会员名" id="userName"  >
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">密码:</label>
+            <div class="col-sm-10">
+                <input type="password" class="form-control" placeholder="请输入会员名" id="password"  >
+            </div>
+        </div>
+    </form>
+</div>
+<script src="/js/jquery-3.3.1.js"></script>
+<script src="/js/jquery.cookie.min.js"></script>
+<script src="/js/bootStrap/js/bootstrap.min.js"></script>
+<script src="/js/bootbox/bootbox.min.js"></script>
+<script src="/js/common/nav.js"></script>
+
+<script>
+    $(function () {
+        initProductTable();
+        initBrandTable();
+        initTypeList();
+    })
+
+
+    /*初始化Css*/
+    function initCss() {
+        $('.all-sort-list2 > .item').hover(function() {
+            //父类分类列表容器的高度
+
+            $(this).addClass('hover');
+            $(this).children('.item-list').css('display', 'block');
+        }, function() {
+            $(this).removeClass('hover');
+            $(this).children('.item-list').css('display', 'none');
+        });
+
+        $('.item > .item-list > .close').click(function() {
+            $(this).parent().parent().removeClass('hover');
+            $(this).parent().hide();
+        });
+    }
+    /*初始化类型列表*/
+    var v_typeArr;
+    var v_html="";
+    function initTypeList() {
+        $.post({
+            url:"http://localhost:8086/type/findTypeList",
+            success:function (result) {
+                if (result.code == 200){
+                    v_typeArr = result.data;
+                    console.log(v_typeArr)
+                    buildType1(1);
+                    $("#typeListDiv").html(v_html)
+                    initCss();
+                }
+            }
+        })
+    }
+    /*拼接第一级联动*/
+    function buildType1(id) {
+        var v_typeArr1 = buildChilds(id);
+        for (var i = 0; i < v_typeArr1.length; i++) {
+            v_html += '<div class="item">';
+            v_html +=' <h3><a href="">'+v_typeArr1[i].typeName+'</a></h3>';
+            v_html += '<div class="item-list clearfix">'
+            v_html += '<div class="subitem">'
+            buildType2(v_typeArr1[i].id);
+            v_html += '</div>';
+            v_html += '</div>';
+            v_html += '</div>';
+
+        }
+        function buildType2(id) {
+            var v_typeArr2 = buildChilds(id);
+            for (var i = 0; i < v_typeArr2.length; i++) {
+                v_html += '<dl class="fore1'+i+1+'">';
+                v_html += '<dt><a href="">'+v_typeArr2[i].typeName+'</a></dt>';
+                v_html += '<dd>'
+                buildType3(v_typeArr2[i].id);
+                v_html += '</dd>';
+                v_html += '</dl>';
+            }
+
+        }
+        function buildType3(id) {
+            var v_typeArr3 = buildChilds(id);
+            for (var i = 0; i < v_typeArr3.length; i++) {
+                v_html += '<em><a href="">'+v_typeArr3[i].typeName+'</a></em>'
+            }
+        }
+
+    }
+    function buildChilds(id) {
+        var v_child = [];
+        for (var i = 0; i < v_typeArr.length; i++) {
+            if (v_typeArr[i].pid == id){
+               v_child.push(v_typeArr[i])
+            }
+        }
+        return v_child;
+
+    }
+    function initProductTable() {
+        $.ajax({
+            url:"http://localhost:8086/products/findList",
+            type:"get",
+            success:function (result) {
+                if (result.code==200){
+                    var v_dataList = result.data;
+                    console.log(v_dataList)
+                    for (var i = 0; i < v_dataList.length; i++) {
+                        var v_modelList = $("#modelDiv").html();
+                        var v_list = v_modelList.replace(/##proName##/g,v_dataList[i].proName).replace(/##price##/g,v_dataList[i].price).replace(/##proImg##/g,v_dataList[i].proImg)
+                            .replace(/##productId##/g,v_dataList[i].id)
+                        $("#resultDiv").append(v_list);
+                    }
+                }
+            }
+        })
+
+    }
+    function initBrandTable() {
+        $.ajax({
+            url:"http://localhost:8086/brands/findList",
+            type:"get",
+            success:function (result){
+                if (result.code==200){
+                    var v_data = result.data;
+                    for (var i = 0; i < v_data.length; i++) {
+                        var v_brandList = $("#modelBrandDiv").html();
+                        var v_list = v_brandList.replace(/##brandName##/g,v_data[i].brandName).replace(/##brandImg##/g,v_data[i].brandImg);
+                        $("#resultBrandDiv").append(v_list);
+                    }
+                }
+            }
+        })
+    }
+</script>
+</body>
+</html>
